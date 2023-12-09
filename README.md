@@ -18,12 +18,24 @@ special features：
 3.试题拆分为json格式，图片存为二进制，跟随试题。
 
 # 代码使用
-0.环境安装
+### 0.环境安装
    
     pip install psutil pywinauto tqdm pywin32 base64 zipfile re shutil
 
 
-1.调用命令行
+### 1.docx2json 全流程使用
+#### 1.1 安装宏
+打开word添加VAB宏，注意宏的位置为**所有文档**
+```vba
+Sub SelectEntireDocument()
+    Selection.WholeStory
+End Sub
+```
+#### 1.2 下载pandoc
+https://pandoc.org/installing.html
+
+记住安装位置
+#### 1.3 调用命令行
 ```bash
 run.sh <input_dir> <output_dir> <pandoc_dir> \
  <align_not_dir> <align_fail_dir> <output_json_file>
@@ -39,7 +51,20 @@ run.sh <input_dir> <output_dir> <pandoc_dir> \
 
 ![sample](readme/sample.jpg)
 
-2.结果分析
+
+### 2.md2json 仅使用解析器
+```bash
+python extract_and_align_exam.py <input_dir> <output_json_file>
+ <align_not_dir> <align_fail_dir> 
+```
+- 参数 <input_dir> 为待处理docx与md文档绝对路径，docx与md需放在同一地址下
+- 参数 <output_json_file> 为保存最终json文件的路径，注意是一个文件 e.g. .\test.json
+- 参数 <align_not_dir> 为试题对齐中，无法匹配模板文档归纳的绝对路径
+- 参数 <align_fail_dir> 为试题对齐中，对齐失败文档归纳的绝对路径
+
+
+
+### 3.结果分析
 跑完全部的数据后，会自动弹出分类统计表格，显示这一批次的数据中，成功，对齐失败，模式不匹配的文档数量直方图。
 
 ![ill](readme/illust.png)

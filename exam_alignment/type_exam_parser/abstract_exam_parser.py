@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import re
 
 class AbstractExamParser(ABC):
-    answer_keywords=["答案"]
+    answer_keywords=["答案","解答"]
     topic_number_keywords=[".", '．', '、']
 
     def __init__(self, content):

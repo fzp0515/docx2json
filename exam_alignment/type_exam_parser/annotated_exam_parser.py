@@ -7,12 +7,28 @@ class AnnotatedExamParser(AbstractExamParser):
     
     @staticmethod
     def detect_this_exam_type(content: str):
+        print(f"【AnnotatedExamParser开始】")
         lines = content.splitlines()
-        if len(lines) < 10:
+        limit_num=10
+        if len(lines) < limit_num:
+            print(f"【文本小于'{limit_num}'行】")
             return False
+
+
         answer_count = AbstractExamParser.answer_count_total(lines)
         question_indexes = AbstractExamParser.find_questions_and_answer_indexes(lines)
-        return answer_count > len(question_indexes) / 2
+        print(f"question_count:'{len(question_indexes)}'")
+        print(f"answer_list:'{answer_count}'")
+
+        is_enough=answer_count > len(question_indexes) / 2
+        if is_enough:
+            print(f"【答案数量大于题号一半】")
+            print(f"【AnnotatedExamParser匹配成功】")
+        else:
+            print(f"【答案数量小于题号一半】")
+            print(f"【AnnotatedExamParser匹配失败】")
+
+        return is_enough
 
     def extract_questions(self):
         topic_details = self.extract_topic_details()

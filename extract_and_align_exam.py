@@ -72,23 +72,26 @@ def find_recode_images_in_docx(docx_path):
 
 
 def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: list, fail_files: list):
+    print(f"=====开始处理 '{file_local.name}' ======")
     examParserContainer = ExamParserContainer(md_text)
     exam_parser = examParserContainer.get_exam_parser()
 
     if not exam_parser:
-        print(f"无法检测 '{file_local.name}' 的类型")
+        print(f"'{file_local.name}'已加入not文件夹")
         not_rec_files.append(file_local)
         return
 
     try:
         align_qustion = exam_parser.align()
+        print(f"exam_parser.align()报错")
     except:
-        print(f"'{file_local.name}' 对齐失败")
+        print(f"'{file_local.name}' 已加入align fail文件夹")
         fail_files.append(file_local)
         return
 
     if not align_qustion:
-        print(f"'{file_local.name}' 对齐失败")
+        print(f"align_qustion为空")
+        print(f"'{file_local.name}' 已加入align fail文件夹")
         fail_files.append(file_local)
         return
 
@@ -97,7 +100,7 @@ def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: li
         docx_file_path = os.path.join(os.path.dirname(file_local),file_local.name.replace(".md", ".docx"))
         images_base64_dic = find_recode_images_in_docx(docx_file_path)
     except:
-        print("获取图片解析错误")
+        print("【图片解析错误】")
 
 
     for qustion_with_answer in align_qustion:
@@ -114,7 +117,7 @@ def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: li
                 for file in pic_file:
                     image_base64_forsingle_dic[file]=images_base64_dic[file]
         except:
-            print("图片生成有问题")
+            print("【图片对齐有问题】")
         #增加试卷detail data
         qustion_with_answer["detail_data"]={
 
@@ -123,8 +126,9 @@ def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: li
             "images":image_base64_forsingle_dic#图片二进制字典
         }
 
-        with open(output_local, "a",encoding='utf-8') as f:
-            f.write(json.dumps(qustion_with_answer, ensure_ascii=False) + '\n')
+        with open(output_local, "a",encoding='utf-8') as ff:
+            print(f"=====开始写入 '{file_local.name}' ======")
+            ff.write(json.dumps(qustion_with_answer, ensure_ascii=False) + '\n')
 
 
 def extract_image_filenames(text):

@@ -12,18 +12,34 @@ class StandardExamParser(AbstractExamParser):
         校验试卷类型
         传入试卷的文本
         """
+        print(f"【StandardExamParser开始】")
         lines = content.splitlines()
         answer_split_str = StandardExamParser.get_answer_split_str(lines[5:])
         if answer_split_str is None:
+            print(f"【未找到题目答案分割行】")
+            print(f"【StandardExamParser匹配失败】")
             return False
         answer_split_str_index = 0
+
         for i in range(len(lines)):
             if lines[i] == answer_split_str:
                 answer_split_str_index = i
+                print(f"【找到题目答案分割行：'{i}'】")
                 break
+
         question_list = StandardExamParser.get_all_question_number(lines[:answer_split_str_index])
         answer_list = StandardExamParser.get_all_question_number(lines[answer_split_str_index:])
-        return question_list == answer_list
+        print(f"question_list:'{question_list}'")
+        print(f"answer_list:'{answer_list}'")
+        is_match = question_list == answer_list
+
+        if is_match:
+            print(f"【题干答案已匹配】")
+            print(f"【StandardExamParser匹配成功】")
+        else:
+            print(f"【题干答案不匹配】")
+            print(f"【StandardExamParser匹配失败】")
+        return is_match
 
     
     def extract_questions(self):
@@ -189,7 +205,7 @@ class StandardExamParser(AbstractExamParser):
         return question_list,answer_area_str
     
     @staticmethod
-    def get_answer_split_str(lines, answer_words = ["参考答案", "试题解析", "参考解答"]):
+    def get_answer_split_str(lines, answer_words = ["参考答案", "试题解析", "试题解答","答案参考"]):
         """
         传入试卷文本的每一行
         返回分割的答案区域分割的位置

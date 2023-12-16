@@ -55,7 +55,7 @@ def find_recode_images_in_docx(docx_path):
     return image_base64_dic
 
 
-def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: list, fail_files: list):
+def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: list, fail_files: list,handle_pic):
     print(f"=====开始处理 '{file_local.name}' ======")
 
     #分离图片和文本，防止切割题目连黏
@@ -85,14 +85,15 @@ def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: li
         fail_files.append(file_local)
         return
 
+    #仅处理
+    if handle_pic:
 
-
-    # 得到docx文件下图片转成base64的字典
-    try:
-        docx_file_path = os.path.join(os.path.dirname(file_local),file_local.name.replace(".md", ".docx"))
-        images_base64_dic = find_recode_images_in_docx(docx_file_path)
-    except:
-        print("【图片解析错误】")
+        # 得到docx文件下图片转成base64的字典
+        try:
+            docx_file_path = os.path.join(os.path.dirname(file_local),file_local.name.replace(".md", ".docx"))
+            images_base64_dic = find_recode_images_in_docx(docx_file_path)
+        except:
+            print("【图片解析错误】")
 
 
     for qustion_with_answer in align_qustion:
@@ -101,15 +102,18 @@ def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: li
         #抽取字符串里的图片名字
         pic_file=extract_image_filenames(concatenated_string)
         pic_count=len(pic_file)
+        if pic_count and not handle_pic:
+            continue
 
-        #单个试题里包含的图片二进制存成字典
-        image_base64_forsingle_dic={}
-        try:
-            if pic_count!=0:
-                for file in pic_file:
-                    image_base64_forsingle_dic[file]=images_base64_dic[file]
-        except:
-            print("【图片对齐有问题】")
+        image_base64_forsingle_dic = {}
+        if handle_pic and pic_count:
+            #单个试题里包含的图片二进制存成字典
+            try:
+                if pic_count!=0:
+                    for file in pic_file:
+                        image_base64_forsingle_dic[file]=images_base64_dic[file]
+            except:
+                print("【图片对齐有问题】")
 
         #增加试卷detail data
         qustion_with_answer["detail_data"]={
@@ -140,13 +144,15 @@ if __name__ == "__main__":
     parser.add_argument('output_file', type=str,  help="输出文件, jsonl格式")
     parser.add_argument('notRec_dir', type=str,  help="无法识别模式的文档所在的文件夹")
     parser.add_argument('fail_dir', type=str, help="无法对齐的文档所在的文件夹")
-
+    parser.add_argument('--handle_pic', action='store_true', help='是否仅处理不带图片的题目')
     args = parser.parse_args()
 
     input_path = Path(args.input_dir)
     output_local = Path(args.output_file)
     notRec_path = Path(args.notRec_dir)
     fail_path = Path(args.fail_dir)
+    handle_pic=args.handle_pic
+
 
     not_rec_files = []
     fail_files = []
@@ -155,7 +161,7 @@ if __name__ == "__main__":
         file_count+=1
         with open(file, "r", encoding="utf-8") as f:
             md_text = one_file_per_process(f.read())
-            process(md_text, file, output_local,not_rec_files, fail_files)
+            process(md_text, file, output_local,not_rec_files, fail_files,handle_pic)
 
 
     # 移动无法识别的文件

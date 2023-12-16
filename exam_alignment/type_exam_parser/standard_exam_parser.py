@@ -20,11 +20,10 @@ from exam_alignment.utils.alignment_utils import type_of_judgment
 from exam_alignment.utils.alignment_utils import split_question
 from exam_alignment.utils.alignment_utils import find_continuous_sequence
 from exam_alignment.utils.alignment_utils import extract_and_combine_numbers_in_not_start_by_number
-class StandardExamParser(AbstractExamParser):
+class StandardExamParser():
     def __init__(self, content):
-        super().__init__(content)
+        self.content=content
 
-    
     @staticmethod
     def detect_this_exam_type(content):
         """
@@ -61,12 +60,16 @@ class StandardExamParser(AbstractExamParser):
 
         answer_str_area = generate_answer_area_string(content, split_str)
         answer_str= StandardExamParser.extract_answers(answer_area_str_process(answer_str_area))
+        try:
+            question_count = len(all_question)
+            answer_count = len(answer_str)
+            print(f"question_list:'{question_count}'")
+            print(f"answer_list:'{answer_count}'")
+            is_match = question_count == answer_count
+        except:
+            print(f"【抽取题干答案报错】")
+            return False
 
-        question_count = len(all_question)
-        answer_count = len(answer_str)
-        print(f"question_list:'{question_count}'")
-        print(f"answer_list:'{answer_count}'")
-        is_match = question_count == answer_count
 
         if is_match:
             print(f"【题干答案已匹配】")
@@ -159,7 +162,7 @@ class StandardExamParser(AbstractExamParser):
         questions_with_answer = []
         if not answer_str:
             return [{"question": question, "answer": None} for question in all_question]
-        all_answer = StandardExamParser.get_all_answer_sequence(answer_area_str_process(answer_str))
+        all_answer = StandardExamParser.extract_answers(answer_area_str_process(answer_str))
 
         #  倒叙是因为，有的文件出现多个相同的题号，我们确保我们拿到的是准确的
         questions_map = {extract_and_combine_numbers_in_not_start(question): question for question in
@@ -180,7 +183,7 @@ class StandardExamParser(AbstractExamParser):
         对齐
         """
         print(f"【对齐开始】")
-        all_question, split_str = StandardExamParser.get_all_question(self.content)
+        all_question, split_str = StandardExamParser.extract_questions(self.content)
         answer_str = generate_answer_area_string(self.content, split_str)
         questions_with_answer=StandardExamParser.alignment_answer(all_question, answer_str)
         for row in questions_with_answer:

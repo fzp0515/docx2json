@@ -7,11 +7,9 @@
     <list default="true" id="25a7464d-af22-4a43-a4fd-74484e4dc70e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ee2omml/ee_to_omml.py" beforeDir="false" afterPath="$PROJECT_DIR$/ee2omml/ee_to_omml.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exam_alignment/exam_parser_container.py" beforeDir="false" afterPath="$PROJECT_DIR$/exam_alignment/exam_parser_container.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/exam_alignment/type_exam_parser/abstract_exam_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/exam_alignment/type_exam_parser/abstract_exam_parser.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/exam_alignment/type_exam_parser/annotated_exam_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/exam_alignment/type_exam_parser/annotated_exam_parser.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/exam_alignment/type_exam_parser/standard_exam_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/exam_alignment/type_exam_parser/standard_exam_parser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exam_alignment/utils/alignment_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/exam_alignment/utils/alignment_utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/extract_and_align_exam.py" beforeDir="false" afterPath="$PROJECT_DIR$/extract_and_align_exam.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -58,7 +56,7 @@
       <updated>1701505670385</updated>
       <workItem from="1701505688593" duration="1245000" />
       <workItem from="1702103993276" duration="8265000" />
-      <workItem from="1702704159649" duration="13495000" />
+      <workItem from="1702704159649" duration="17263000" />
     </task>
     <servers />
   </component>

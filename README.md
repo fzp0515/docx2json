@@ -38,7 +38,7 @@ https://pandoc.org/installing.html
 #### 1.3 调用命令行
 ```bash
 run.sh <input_dir> <output_dir> <pandoc_dir> \
- <align_not_dir> <align_fail_dir> <output_json_file>
+ <align_not_dir> <align_fail_dir> <output_json_file> <--handle_pic>
 ```
 - 参数 <input_dir> 为待处理docx文档绝对路径
 - 参数 <output_dir> 为输出md文档的绝对路径
@@ -46,6 +46,7 @@ run.sh <input_dir> <output_dir> <pandoc_dir> \
 - 参数 <align_not_dir> 为试题对齐中，无法匹配模板文档归纳的绝对路径
 - 参数 <align_fail_dir> 为试题对齐中，对齐失败文档归纳的绝对路径
 - 参数 <output_json_file> 为保存最终json文件的路径，注意是一个文件 e.g. .\test.json
+- <--handle_pic> 是否处理带图片的题目，有这个指示则处理，没有则跳过，仅处理纯文本题目
 
 建议按照如下的文件结构存储您的数据：
 
@@ -71,6 +72,7 @@ python extract_and_align_exam.py <input_dir> <output_json_file>
 
 
 # 解析器介绍
+
 ### standard exam parser
 面向类高考试卷的解析器，此类试卷特征为：前半部分为题目，后半部分为答案解析，题目与答案中间有分割关键词 e.g. 参考答案，答案解析等。
 通过对试卷进行题目与答案的分割，再到每一个子块分割序号，最后对齐。

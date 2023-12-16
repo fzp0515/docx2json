@@ -7,6 +7,18 @@ class AnnotatedExamParser(AbstractExamParser):
     
     @staticmethod
     def detect_this_exam_type(content: str):
+        """
+            检测是否试卷形式为
+            题目1
+            答案1
+            题目2
+            答案2
+
+        """
+
+
+
+
         print(f"【AnnotatedExamParser开始】")
         lines = content.splitlines()
         limit_num=10

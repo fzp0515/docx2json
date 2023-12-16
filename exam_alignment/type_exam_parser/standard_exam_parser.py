@@ -1,6 +1,25 @@
 from .abstract_exam_parser import AbstractExamParser
 import re
 
+import sys
+import os
+
+from exam_alignment.utils.alignment_utils import one_file_per_process
+from exam_alignment.utils.alignment_utils import extract_and_combine_numbers
+from exam_alignment.utils.alignment_utils import extract_and_combine_numbers_in_not_start
+from exam_alignment.utils.alignment_utils import longest_increasing_subsequence_index
+from exam_alignment.utils.alignment_utils import find_answer_split_str
+from exam_alignment.utils.alignment_utils import find_next_question_index
+from exam_alignment.utils.alignment_utils import refine_answers
+from exam_alignment.utils.alignment_utils import match_specific_from_end
+from exam_alignment.utils.alignment_utils import answer_area_str_process
+from exam_alignment.utils.alignment_utils import generate_answer_area_string
+from exam_alignment.utils.alignment_utils import align_answers_in_questions
+from exam_alignment.utils.alignment_utils import match_specific_from_start
+from exam_alignment.utils.alignment_utils import type_of_judgment
+from exam_alignment.utils.alignment_utils import split_question
+from exam_alignment.utils.alignment_utils import find_continuous_sequence
+from exam_alignment.utils.alignment_utils import extract_and_combine_numbers_in_not_start_by_number
 class StandardExamParser(AbstractExamParser):
     def __init__(self, content):
         super().__init__(content)
@@ -9,29 +28,45 @@ class StandardExamParser(AbstractExamParser):
     @staticmethod
     def detect_this_exam_type(content):
         """
-        校验试卷类型
-        传入试卷的文本
+        检测是否试卷形式为
+        题目
+        题目答案分割标志词：e.g. 参考答案
+        答案
+
         """
+
         print(f"【StandardExamParser开始】")
-        lines = content.splitlines()
-        answer_split_str = StandardExamParser.get_answer_split_str(lines[5:])
-        if answer_split_str is None:
-            print(f"【未找到题目答案分割行】")
-            print(f"【StandardExamParser匹配失败】")
+        all_question, split_str = StandardExamParser.extract_questions(content)
+
+        # answer_split_str = StandardExamParser.get_answer_split_str(lines[5:])
+        # if answer_split_str is None:
+        #     print(f"【未找到题目答案分割行】")
+        #     print(f"【StandardExamParser匹配失败】")
+        #     return False
+        # answer_split_str_index = 0
+        #
+        # for i in range(len(lines)):
+        #     if lines[i] == answer_split_str:
+        #         answer_split_str_index = i
+        #         print(f"【找到题目答案分割行：'{i}''{answer_split_str}'】")
+        #         break
+
+        print(f"split_str:\n{split_str}")
+        if split_str in [-1, 0]:
+            print("【未找到答案关键字】")
             return False
-        answer_split_str_index = 0
+        if split_str ==1:
+            print("【非standard_exam_parser】")
+            return False
 
-        for i in range(len(lines)):
-            if lines[i] == answer_split_str:
-                answer_split_str_index = i
-                print(f"【找到题目答案分割行：'{i}'】")
-                break
+        answer_str_area = generate_answer_area_string(content, split_str)
+        answer_str= StandardExamParser.extract_answers(answer_area_str_process(answer_str_area))
 
-        question_list = StandardExamParser.get_all_question_number(lines[:answer_split_str_index])
-        answer_list = StandardExamParser.get_all_question_number(lines[answer_split_str_index:])
-        print(f"question_list:'{question_list}'")
-        print(f"answer_list:'{answer_list}'")
-        is_match = question_list == answer_list
+        question_count = len(all_question)
+        answer_count = len(answer_str)
+        print(f"question_list:'{question_count}'")
+        print(f"answer_list:'{answer_count}'")
+        is_match = question_count == answer_count
 
         if is_match:
             print(f"【题干答案已匹配】")
@@ -41,207 +76,121 @@ class StandardExamParser(AbstractExamParser):
             print(f"【StandardExamParser匹配失败】")
         return is_match
 
-    
-    def extract_questions(self):
-        """
-        获取试卷题目
-        """
-        lines = self.content.splitlines()
-        answer_split_str = StandardExamParser.get_answer_split_str(lines[5:])
-        answer_split_str_index = 0
-        for i in range(len(lines)):
-            if lines[i] == answer_split_str:
-                answer_split_str_index = i
-                break 
-        question_indexes = self.longest_increasing_subsequence_index(StandardExamParser.find_questions_and_answer_indexes(lines[:answer_split_str_index]))
-        # 提取每个题目的内容
-        questions_content = []
-        lines = lines[:answer_split_str_index]
-        for i, start_index in enumerate(question_indexes):
-            # 如果不是最后一个题目，则结束索引是下一个题目的开始索引
-            # 如果是最后一个题目，则内容一直取到文档的结尾
-            end_index = question_indexes[i + 1] if i + 1 < len(question_indexes) else len(lines)
-            # 提取当前题目的内容，包括起始索引行但不包括结束索引行
-            question_content = lines[start_index:end_index]
-            # 将所有行连接成一个字符串
-            questions_content.append({"topic_number": StandardExamParser.extract_number_from_string('\n'.join(question_content)), "question": '\n'.join(question_content)})
 
-        return questions_content
-    
-    def extract_answers(self):
-        """
-        获取试卷答案
-        """
-        lines = self.content.splitlines()
-        question_list, answer_str = StandardExamParser.find_all_topic_numbers_with_content(lines)
-        joined_questions = "".join(question_list[-1]['content'])
-        answer_list = []
-        if answer_str in joined_questions:
-            # 分割字符串，获取 answer_str 右边的内容
-            answer_right_side = joined_questions.split(answer_str, 1)[1]
-            answer_number = 1
-            while(True):
-                answer, text = StandardExamParser.find_answer_by_number(answer_right_side, answer_number)
-                if answer is not None:
-                    answer_list.append({"topic_number":answer_number, "answer":answer})
-                    answer_number = answer_number + 1
-                else:
-                    return answer_list
+    @staticmethod
+    def extract_questions(text):
+        # 拆分成行
+        lines = text.splitlines()
+
+        # 定义不准确的题目列表
+        inaccuracy_question = []
+
+        # 从0的位置寻找第一道题
+        index = find_next_question_index(0, lines)
+
+        while index < len(lines):
+            # 寻找下一个题目的index
+            next_index = find_next_question_index(index, lines)
+
+            inaccuracy_question.append("\n".join(lines[index: next_index]))
+            index = next_index
+
+        #     print([(extract_and_combine_numbers(topic), i) for i, topic in enumerate(inaccuracy_question) if extract_and_combine_numbers(topic) is not None])
+        # 通过"最长递增子序列"寻找每个精准的题目所在inaccuracy_question对应的下标
+        all_question_indexs = longest_increasing_subsequence_index(inaccuracy_question)
+
+        # 定义准确的题目列表
+        all_question = []
+        # index为all_question_indexs的下标，all_question_indexs[index]为inaccuracy_question的下标
+        for index, question_index in enumerate(all_question_indexs):
+            if index == len(all_question_indexs) - 1:
+                all_question.append("\n".join(inaccuracy_question[question_index:]))
+                break
+
+            all_question.append("\n".join(inaccuracy_question[question_index:all_question_indexs[index + 1]]))
+
+        if not all_question:
+            return None, None
+
+        all_question = find_continuous_sequence(all_question)
+
+        if text.splitlines()[0] in all_question[-1]:
+            answer_split_str = text.splitlines()[0]
+            # 看看试卷的title是否出现在"all_question[-1]"位置，如果出现则删除
+            all_question[-1] = all_question[-1].split(text.splitlines()[0], 1)[0]
         else:
-            return []
+            # 尝试寻找用于分割答题区与答案区的字符串，返回值为int/str，如果是str则是分割的字符串
+            # 本质是在"all_question[-1]"寻找答案关键字等字样
+            answer_split_str = find_answer_split_str(all_question)
+
+            if isinstance(answer_split_str, str):
+                # 如果找到这个拆分的字符串了，则先把最后一道题的内容进行拆分
+                all_question[-1] = all_question[-1].split(answer_split_str)[0]
+
+        return all_question, answer_split_str
+
+    @staticmethod
+    def extract_answers(answer_area_string):
+        lines = answer_area_string.splitlines()
+
+        inaccuracy_answers = []
+
+        index = find_next_question_index(0, lines)
+        while index < len(lines):
+            next_index = find_next_question_index(index, lines)
+
+            inaccuracy_answers.append("\n".join(lines[index: next_index]))
+            index = next_index
+
+        inaccuracy_answer_indexes = longest_increasing_subsequence_index(inaccuracy_answers)
+
+        processed_inaccuracy_answers = []
+        for index, answer_index in enumerate(inaccuracy_answer_indexes):
+            if index == len(inaccuracy_answer_indexes) - 1:
+                processed_inaccuracy_answers.append(inaccuracy_answers[answer_index])
+                break
+            processed_inaccuracy_answers.append(
+                "\n".join(inaccuracy_answers[answer_index:inaccuracy_answer_indexes[index + 1]]))
+
+        return refine_answers(processed_inaccuracy_answers)[::-1]
+
+    @staticmethod
+    def alignment_answer(all_question, answer_str):
+        questions_with_answer = []
+        if not answer_str:
+            return [{"question": question, "answer": None} for question in all_question]
+        all_answer = StandardExamParser.get_all_answer_sequence(answer_area_str_process(answer_str))
+
+        #  倒叙是因为，有的文件出现多个相同的题号，我们确保我们拿到的是准确的
+        questions_map = {extract_and_combine_numbers_in_not_start(question): question for question in
+                         reversed(all_question)}
+        answer_map = {extract_and_combine_numbers_in_not_start(answer): answer for answer in reversed(all_answer)}
+
+        for sequence_number in questions_map:
+            questions_with_answer.append({
+                "question": questions_map.get(sequence_number),
+                "answer": answer_map.get(sequence_number, None)
+            })
+
+        return list(reversed(questions_with_answer))
+
 
     def align(self):
         """
         对齐
         """
-        return StandardExamParser.merge_questions_and_answers(self.extract_questions(),self.extract_answers())
-    
-    @staticmethod
-    def get_all_question_number(lines):
-        """
-        传入试卷的每行
-        返回找到的所有题号（题号不在开头也可以）
-        """
-        text = ''.join(lines).replace('\\', '')
-        number = 1
-        number_list = []
-        while(number < 24):
-            line, split_text = StandardExamParser.find_answer_by_number(text, number)
-            if line is None:
-                number = number + 1
-                
-                
-                continue
-            text = split_text
-            number_list.append(number)
-            number = number + 1
-        return number_list
-    
+        print(f"【对齐开始】")
+        all_question, split_str = StandardExamParser.get_all_question(self.content)
+        answer_str = generate_answer_area_string(self.content, split_str)
+        questions_with_answer=StandardExamParser.alignment_answer(all_question, answer_str)
+        for row in questions_with_answer:
+            print()
 
-    @staticmethod
-    def find_answer_by_number(text, number, isAdaptationSymbol=True):
-        """
-        寻找试卷答案通过题号
-        text: 寻找题目所需文本
-        number: 题目标题(1. 2. 3. 4. 5.)
-        isAdaptationSymbol: 是否适配符号(默认适配 1. 2. 3.  | 不适配的话会寻找 1 2 3 4)
-        """
-        # 将数字转换为字符串
-        number_str = str(number)
-        next_number_str = str(number + 1)
+            print(row["question"])
+            print("-------------------------------------------------------")
+            print(f"{row['answer']}")
+            print()
+            print("============================================================")
 
-        # 根据是否适配标点符号选择正则表达式
-        if isAdaptationSymbol:
-            # 适配符号，同时确保不是.png文件名的一部分
-            pattern = re.compile(rf'({number_str}(?!\.(png|jpeg))[．.]).*?(?={next_number_str}[．.]|\Z)', re.DOTALL)
-        else:
-            # 不适配符号，同时确保不是.png文件名的一部分
-            pattern = re.compile(rf'({number_str}(?!\.(png|jpeg))\b).*?(?={next_number_str}\b|\Z)', re.DOTALL)
+        return questions_with_answer
 
-        match = pattern.search(text)
-        if match:
-            # 匹配到的文本是当前题号到下一个题号之间的内容
-            matched_text = match.group(0)
-            # 剩余的文本是匹配到的内容之后的所有文本
-            rest_text = text[match.end():]
-            if rest_text == "":
-                rest_text = text
-            return matched_text, rest_text
-
-        # 如果没有匹配，返回None和原始文本
-        return None, text
-
-    @staticmethod
-    def merge_questions_and_answers(questions, answers):
-        """
-        入参：question的list和answers的list（格式如 extract_answers 或question的出参）
-        返回对齐好的list
-        """
-        # 创建一个字典，将问题按照"topic_number"存储
-        question_dict = {q["topic_number"]: q["question"] for q in questions}
-
-        result = []
-
-        # 遍历答案数组，将答案与问题组合
-        for answer in answers:
-            topic_number = answer["topic_number"]
-            question = question_dict.get(topic_number, "")  # 获取问题，如果没有对应的问题则为空字符串
-            result.append({"topic_number": topic_number, "question": question, "answer": answer["answer"]})
-
-        # 处理只有问题而没有答案的情况
-        for question in questions:
-            if question["topic_number"] not in [r["topic_number"] for r in result]:
-                result.append({"topic_number": question["topic_number"], "question": question["question"], "answer": ""})
-
-        return result
-
-    @staticmethod
-    def extract_number_from_string(input_string):
-        """
-        传入一个字符串寻找number
-        """
-        pattern = r"(\d+(\.\d+)*)"  # 匹配一个或多个数字和可选的小数点
-        match = re.search(pattern, input_string)
-        if match:
-            number_str = match.group(1)  # 获取匹配的数字部分
-            return int(float(number_str))  # 将数字部分转换为浮点数，然后再转换为整数
-        return None 
-    
-    @staticmethod
-    def get_paper_question_by_number(question_indexes, lines):
-        """
-        传入题目的索引下标
-        获取每道题 和 答案分割的字符串
-        """
-        question_list = []
-        answer_area_str = ""
-        for i, question_index in enumerate(question_indexes):
-            if i+1 == len(question_indexes):
-                question_list.append("".join(lines[question_indexes[i]:]))
-                answer_area_str = StandardExamParser.get_answer_split_str(lines[question_indexes[i]:])
-            else:
-                question_list.append("".join(lines[question_index:question_indexes[i+1]]))
-
-        return question_list,answer_area_str
-    
-    @staticmethod
-    def get_answer_split_str(lines, answer_words = ["参考答案", "试题解析", "试题解答","答案参考"]):
-        """
-        传入试卷文本的每一行
-        返回分割的答案区域分割的位置
-        """
-        for line in lines:
-            if any(answer_word in line for answer_word in answer_words):
-                return line
-        return None
-
-    @staticmethod
-    def find_questions_and_answer_indexes(lines: list[str]) -> list[super]:
-        """
-        获取题目和答案的lines下标
-
-        判断行的开始是否为 数字+[. ．]
-        """
-        question_nums = []
-        question_num_indexs = []
-        pattern = r"^(\d+)[\.|\．|、]"
-        for index in range(len(lines)):
-            match = re.search(pattern, lines[index].replace("\\",""))
-            if match: 
-                question_number = match.group(1)
-                question_nums.append(question_number)
-                question_num_indexs.append(index)
-        return [(int(x), y) for x, y in zip(question_nums, question_num_indexs)]
-    
-    @staticmethod
-    def find_all_topic_numbers_with_content(lines):
-        """
-        获取标准试卷答案区
-        返回每题答案的集合
-        """
-        question_number_indexs = AbstractExamParser.longest_increasing_subsequence_index(StandardExamParser.find_questions_and_answer_indexes(lines))
-        question_list,answer_area_str = StandardExamParser.get_paper_question_by_number(question_number_indexs, lines)
-        new_question_list = []
-        for question in question_list:
-            new_question_list.append({"topic_number":StandardExamParser.extract_number_from_string(question), "content": question})
-        return StandardExamParser.construct_complete_topic_details(new_question_list),answer_area_str

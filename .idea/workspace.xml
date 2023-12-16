@@ -5,24 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="25a7464d-af22-4a43-a4fd-74484e4dc70e" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/pythonProject.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ee2omml/ee_to_omml.py" beforeDir="false" afterPath="$PROJECT_DIR$/ee2omml/ee_to_omml.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/exam_alignment/exam_parser_container.py" beforeDir="false" afterPath="$PROJECT_DIR$/exam_alignment/exam_parser_container.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exam_alignment/extract and alignment flowchart.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/exam_alignment/img.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/exam_alignment/type_exam_parser/abstract_exam_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/exam_alignment/type_exam_parser/abstract_exam_parser.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/exam_alignment/type_exam_parser/annotated_exam_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/exam_alignment/type_exam_parser/annotated_exam_parser.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/exam_alignment/type_exam_parser/standard_exam_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/exam_alignment/type_exam_parser/standard_exam_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/exam_alignment/utils/alignment_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/exam_alignment/utils/alignment_utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/extract_and_align_exam.py" beforeDir="false" afterPath="$PROJECT_DIR$/extract_and_align_exam.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/handle_json/analysisJson.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/handle_json/countJsonlLineNumber.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/handle_json/read_json.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/handle_mathtest/extract_clear_OCR_image.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/handle_mathtest/filter_file_media_morethan10.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/handle_mathtest/filter_math_file.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,21 +33,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "master",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -67,7 +57,8 @@
       <option name="presentableId" value="Default" />
       <updated>1701505670385</updated>
       <workItem from="1701505688593" duration="1245000" />
-      <workItem from="1702103993276" duration="6254000" />
+      <workItem from="1702103993276" duration="8265000" />
+      <workItem from="1702704159649" duration="13495000" />
     </task>
     <servers />
   </component>

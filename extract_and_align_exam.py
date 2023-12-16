@@ -13,22 +13,6 @@ import time
 from exam_alignment.utils.alignment_utils import one_file_per_process
 from exam_alignment.utils.alignment_utils import extract_and_combine_numbers
 from exam_alignment.utils.alignment_utils import extract_and_combine_numbers_in_not_start
-from exam_alignment.utils.alignment_utils import longest_increasing_subsequence_index
-from exam_alignment.utils.alignment_utils import find_answer_split_str
-from exam_alignment.utils.alignment_utils import find_next_question_index
-from exam_alignment.utils.alignment_utils import refine_answers
-from exam_alignment.utils.alignment_utils import match_specific_from_end
-from exam_alignment.utils.alignment_utils import answer_area_str_process
-from exam_alignment.utils.alignment_utils import generate_answer_area_string
-from exam_alignment.utils.alignment_utils import align_answers_in_questions
-from exam_alignment.utils.alignment_utils import match_specific_from_start
-from exam_alignment.utils.alignment_utils import type_of_judgment
-from exam_alignment.utils.alignment_utils import split_question
-from exam_alignment.utils.alignment_utils import find_continuous_sequence
-from exam_alignment.utils.alignment_utils import extract_and_combine_numbers_in_not_start_by_number
-
-
-
 from exam_alignment.exam_parser_container import ExamParserContainer
 import shutil
 
@@ -73,7 +57,12 @@ def find_recode_images_in_docx(docx_path):
 
 def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: list, fail_files: list):
     print(f"=====开始处理 '{file_local.name}' ======")
-    examParserContainer = ExamParserContainer(md_text)
+
+    #分离图片和文本，防止切割题目连黏
+    regex_pattern = r"!\[\]\(media/(.+?)\)"
+    modified_text = re.sub(regex_pattern, r"![](media/\1)\n", md_text)
+
+    examParserContainer = ExamParserContainer(modified_text)
     exam_parser = examParserContainer.get_exam_parser()
 
     if not exam_parser:
@@ -83,8 +72,9 @@ def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: li
 
     try:
         align_qustion = exam_parser.align()
-        print(f"exam_parser.align()报错")
+
     except:
+        print(f"exam_parser.align()报错")
         print(f"'{file_local.name}' 已加入align fail文件夹")
         fail_files.append(file_local)
         return
@@ -94,6 +84,8 @@ def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: li
         print(f"'{file_local.name}' 已加入align fail文件夹")
         fail_files.append(file_local)
         return
+
+
 
     # 得到docx文件下图片转成base64的字典
     try:
@@ -118,6 +110,7 @@ def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: li
                     image_base64_forsingle_dic[file]=images_base64_dic[file]
         except:
             print("【图片对齐有问题】")
+
         #增加试卷detail data
         qustion_with_answer["detail_data"]={
 
@@ -126,8 +119,9 @@ def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: li
             "images":image_base64_forsingle_dic#图片二进制字典
         }
 
+
         with open(output_local, "a",encoding='utf-8') as ff:
-            print(f"=====开始写入 '{file_local.name}' ======")
+
             ff.write(json.dumps(qustion_with_answer, ensure_ascii=False) + '\n')
 
 
@@ -163,6 +157,7 @@ if __name__ == "__main__":
             md_text = one_file_per_process(f.read())
             process(md_text, file, output_local,not_rec_files, fail_files)
 
+
     # 移动无法识别的文件
     for file in not_rec_files:
         shutil.move(str(file), str(notRec_path / file.name))
@@ -171,6 +166,7 @@ if __name__ == "__main__":
             shutil.move(str(docx_file_path), str(notRec_path / file.name.replace(".md", ".docx")))
         except:
             print("找不到"+file.name.replace(".md", ".docx"))
+
     # 移动对齐失败的文件
     for file in fail_files:
         shutil.move(str(file), str(fail_path / file.name))
@@ -181,7 +177,7 @@ if __name__ == "__main__":
             print("找不到"+file.name.replace(".md", ".docx"))
 
 
-
+    #绘制柱状图分析图象
     # 数据
     categories = ['align fail', 'not rec', 'correct']
     values = [len(fail_files), len(not_rec_files),file_count-len(fail_files)-len(not_rec_files)]

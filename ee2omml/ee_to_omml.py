@@ -90,24 +90,6 @@ def convert_docx_to_md(docx_file):
         print("Pandoc conversion failed!")
 
 
-    # # 文件路径
-    # directory = os.path.dirname(md_file)
-    #
-    # with open(md_file, 'r', encoding='utf-8') as file:
-    #     content = file.read()
-    #     count = content.count('media')
-    #
-    # # 如果 "media" 的出现次数超过10
-    # if count > 10:
-    #     # 如果 "allpicture" 文件夹不存在，创建它
-    #     allpicture_dir = os.path.join(directory, 'allpicture')
-    #     if not os.path.exists(allpicture_dir):
-    #         os.mkdir(allpicture_dir)
-    #
-    #     # 移动.md文件到 "allpicture" 文件夹
-    #     shutil.move(md_file, allpicture_dir)
-    #     shutil.move(docx_file, allpicture_dir)
-
 
 
 

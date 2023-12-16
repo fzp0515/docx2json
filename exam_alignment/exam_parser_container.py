@@ -11,7 +11,7 @@ class ExamParserContainer():
         self.parser = self.get_exam_parser()
 
     def get_exam_parser(self):
-        #是否包含答案字样
+        # 是否包含答案字样
         if not AbstractExamParser.check_contains_answers(self.content):
             print(f"【not】【未检测到答案关键字】")
             return None
@@ -21,7 +21,7 @@ class ExamParserContainer():
 
         if AnnotatedExamParser.detect_this_exam_type(self.content):
 
-            return AnnotatedExamParser(self.content) 
+            return AnnotatedExamParser(self.content)
         
         if SplitExamParser.detect_this_exam_type(self.content):
             return SplitExamParser(self.content)

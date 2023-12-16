@@ -68,3 +68,12 @@ python extract_and_align_exam.py <input_dir> <output_json_file>
 跑完全部的数据后，会自动弹出分类统计表格，显示这一批次的数据中，成功，对齐失败，模式不匹配的文档数量直方图。
 
 ![ill](readme/illust.png)
+
+
+# 解析器介绍
+### standard exam parser
+面向类高考试卷的解析器，此类试卷特征为：前半部分为题目，后半部分为答案解析，题目与答案中间有分割关键词 e.g. 参考答案，答案解析等。
+通过对试卷进行题目与答案的分割，再到每一个子块分割序号，最后对齐。
+
+### annotated exam parser
+面向题目与答案在一起的试卷类型，题目1，答案1，题目2，答案2·····。

@@ -140,8 +140,7 @@ def find_answer_split_str(all_question):
     occurrence_number = 0
     for question in all_question:
         if any(answer_word in question for answer_word in ANSWER_IN_QUESTION_WORDS):
-            # print(question)
-            # print("==============")
+
             occurrence_number += 1
 
     if occurrence_number == 0:

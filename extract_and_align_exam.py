@@ -10,18 +10,46 @@ import base64
 import pandas as pd
 import os
 import time
+
+from exam_alignment.exam_parser_container import ExamParserContainer
 from exam_alignment.utils.alignment_utils import one_file_per_process
 from exam_alignment.utils.alignment_utils import extract_and_combine_numbers
 from exam_alignment.utils.alignment_utils import extract_and_combine_numbers_in_not_start
-from exam_alignment.exam_parser_container import ExamParserContainer
+from exam_alignment.utils.alignment_utils import one_file_per_process
+from exam_alignment.utils.alignment_utils import extract_and_combine_numbers
+from exam_alignment.utils.alignment_utils import extract_and_combine_numbers_in_not_start
+from exam_alignment.utils.alignment_utils import longest_increasing_subsequence_index
+from exam_alignment.utils.alignment_utils import find_answer_split_str
+from exam_alignment.utils.alignment_utils import find_next_question_index
+from exam_alignment.utils.alignment_utils import refine_answers
+from exam_alignment.utils.alignment_utils import match_specific_from_end
+from exam_alignment.utils.alignment_utils import remove_chinese_num_title
+from exam_alignment.utils.alignment_utils import remove_chinese_num_title
+from exam_alignment.utils.alignment_utils import align_answers_in_questions
+from exam_alignment.utils.alignment_utils import match_specific_from_start
+from exam_alignment.utils.alignment_utils import type_of_judgment
+from exam_alignment.utils.alignment_utils import split_question
+from exam_alignment.utils.alignment_utils import find_continuous_sequence
+from exam_alignment.utils.alignment_utils import extract_and_combine_numbers_in_not_start_by_number
+from exam_alignment.utils.alignment_utils import count_answer_keywords
 import shutil
 
 
 def convert_image_to_binary(image_path):
+    '''
+    图片转二进制
+    :param image_path:
+    :return:
+    '''
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
 
 def find_recode_images_in_docx(docx_path):
+    '''
+    通过路径与文件名找到同名docx，并解压，找到其中的图片路径，返回字典
+    :param docx_path: 文件路径
+    :return: 图片字典，key是图片名，value是二进制
+    '''
     image_base64_dic = {}
 
     #防止有md没docx
@@ -55,12 +83,28 @@ def find_recode_images_in_docx(docx_path):
     return image_base64_dic
 
 
+
+
+
+
+
 def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: list, fail_files: list,handle_pic):
+    '''
+    处理md全文，包括模板匹配，分割与对齐，然后写入json文档
+    :param md_text: 待处理全文
+    :param file_local: 写入文件夹路径
+    :param output_local: 输出文件夹地址
+    :param not_rec_files: 无法识别文件名列表
+    :param fail_files: 对齐失败文件名列表
+    :param handle_pic: 是否处理图片
+    :return:
+    '''
     print(f"=====开始处理 '{file_local.name}' ======")
 
     #分离图片和文本，防止切割题目连黏
     regex_pattern = r"!\[\]\(media/(.+?)\)"
     modified_text = re.sub(regex_pattern, r"![](media/\1)\n", md_text)
+
 
     examParserContainer = ExamParserContainer(modified_text)
     exam_parser = examParserContainer.get_exam_parser()
@@ -130,6 +174,11 @@ def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: li
 
 
 def extract_image_filenames(text):
+    '''
+    匹配文本中的图片插入位置
+    :param text: 待匹配文本
+    :return: matchs组，包含图片名
+    '''
     # 定义正则表达式
     regex_pattern = r"!\[\]\(media/(.+?)\)"
 

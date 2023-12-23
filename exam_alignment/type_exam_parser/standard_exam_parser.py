@@ -12,64 +12,43 @@ from exam_alignment.utils.alignment_utils import find_answer_split_str
 from exam_alignment.utils.alignment_utils import find_next_question_index
 from exam_alignment.utils.alignment_utils import refine_answers
 from exam_alignment.utils.alignment_utils import match_specific_from_end
-from exam_alignment.utils.alignment_utils import answer_area_str_process
+from exam_alignment.utils.alignment_utils import remove_chinese_num_title
 from exam_alignment.utils.alignment_utils import generate_answer_area_string
 from exam_alignment.utils.alignment_utils import align_answers_in_questions
 from exam_alignment.utils.alignment_utils import match_specific_from_start
 from exam_alignment.utils.alignment_utils import type_of_judgment
 from exam_alignment.utils.alignment_utils import split_question
 from exam_alignment.utils.alignment_utils import find_continuous_sequence
+from exam_alignment.utils.alignment_utils import count_answer_keywords
+
 from exam_alignment.utils.alignment_utils import extract_and_combine_numbers_in_not_start_by_number
 class StandardExamParser():
+
     def __init__(self, content):
         self.content=content
+        # self.all_question=[]
+        # self.all_answer=[]
 
     @staticmethod
     def detect_this_exam_type(content):
-        """
-        检测是否试卷形式为
-        题目
-        题目答案分割标志词：e.g. 参考答案
-        答案
-
-        """
-
+        '''
+        检测题目是否为standard模板
+        :param content: 全文
+        :return: ismatch，通过答案列表与题目列表长度是否相等来判断
+        '''
         print(f"【StandardExamParser开始】")
-        all_question, split_str = StandardExamParser.extract_questions(content)
 
-        # answer_split_str = StandardExamParser.get_answer_split_str(lines[5:])
-        # if answer_split_str is None:
-        #     print(f"【未找到题目答案分割行】")
-        #     print(f"【StandardExamParser匹配失败】")
-        #     return False
-        # answer_split_str_index = 0
-        #
-        # for i in range(len(lines)):
-        #     if lines[i] == answer_split_str:
-        #         answer_split_str_index = i
-        #         print(f"【找到题目答案分割行：'{i}''{answer_split_str}'】")
-        #         break
 
-        print(f"split_str:\n{split_str}")
-        if split_str in [-1, 0]:
-            print("【未找到答案关键字】")
-            return False
-        if split_str ==1:
-            print("【非standard_exam_parser】")
-            return False
-
-        answer_str_area = generate_answer_area_string(content, split_str)
-        answer_str= StandardExamParser.extract_answers(answer_area_str_process(answer_str_area))
         try:
+            all_question, all_answer = StandardExamParser.extract_questions_and_answers(content)
             question_count = len(all_question)
-            answer_count = len(answer_str)
+            answer_count = len(all_answer)
             print(f"question_list:'{question_count}'")
             print(f"answer_list:'{answer_count}'")
             is_match = question_count == answer_count
         except:
             print(f"【抽取题干答案报错】")
             return False
-
 
         if is_match:
             print(f"【题干答案已匹配】")
@@ -81,9 +60,16 @@ class StandardExamParser():
 
 
     @staticmethod
-    def extract_questions(text):
-        # 拆分成行
-        lines = text.splitlines()
+    def extract_questions_and_answers(text):
+        '''
+        抽取文本中的题目与答案，如果不符合standard模板则返回空
+        :param text: 全文
+        :return: 题目列表，答案列表
+        '''
+        # 去除大写数字，如三、解答题这种标题行。
+        remove_title_text = remove_chinese_num_title(text)
+
+        lines = remove_title_text.splitlines()
 
         # 定义不准确的题目列表
         inaccuracy_question = []
@@ -109,32 +95,30 @@ class StandardExamParser():
             if index == len(all_question_indexs) - 1:
                 all_question.append("\n".join(inaccuracy_question[question_index:]))
                 break
-
+            # 这一步是将题目分隔开，试卷末尾的答案被暂时分在最后一题里
             all_question.append("\n".join(inaccuracy_question[question_index:all_question_indexs[index + 1]]))
-
-        if not all_question:
-            return None, None
 
         all_question = find_continuous_sequence(all_question)
 
-        if text.splitlines()[0] in all_question[-1]:
-            answer_split_str = text.splitlines()[0]
-            # 看看试卷的title是否出现在"all_question[-1]"位置，如果出现则删除
-            all_question[-1] = all_question[-1].split(text.splitlines()[0], 1)[0]
+        # 判断为standard模式：找到"答案", "参考答案", "试题解析", "参考解答"所在行，并分割。
+        answer_split_str = find_answer_split_str(all_question[-1])
+
+
+        if isinstance(answer_split_str, str):
+            print(f"split_str:\n{answer_split_str}")
+            try:#如果是答案在最后一题当中，则其长度应远长于前两题之和
+                if len(all_question[-1]) > len(all_question[-2]) + len(all_question[-3]):
+                    all_answer_area = all_question[-1].split(answer_split_str)[1]
+                    all_question[-1] = all_question[-1].split(answer_split_str)[0]
+            except:
+                return None, None
+
         else:
-            # 尝试寻找用于分割答题区与答案区的字符串，返回值为int/str，如果是str则是分割的字符串
-            # 本质是在"all_question[-1]"寻找答案关键字等字样
-            answer_split_str = find_answer_split_str(all_question)
+            return None,None
 
-            if isinstance(answer_split_str, str):
-                # 如果找到这个拆分的字符串了，则先把最后一道题的内容进行拆分
-                all_question[-1] = all_question[-1].split(answer_split_str)[0]
 
-        return all_question, answer_split_str
-
-    @staticmethod
-    def extract_answers(answer_area_string):
-        lines = answer_area_string.splitlines()
+        #分割答案
+        lines = all_answer_area.splitlines()
 
         inaccuracy_answers = []
 
@@ -154,15 +138,23 @@ class StandardExamParser():
                 break
             processed_inaccuracy_answers.append(
                 "\n".join(inaccuracy_answers[answer_index:inaccuracy_answer_indexes[index + 1]]))
+        refine_answer = refine_answers(processed_inaccuracy_answers)[::-1]
+        print(f"==题目列表编号==")
+        for question in all_question:
+            print(question[:10])
 
-        return refine_answers(processed_inaccuracy_answers)[::-1]
+        print(f"==答案列表编号==")
+        for answer in refine_answer:
+            print(answer[:10])
+
+        return all_question,refine_answer
+
+
+
 
     @staticmethod
-    def alignment_answer(all_question, answer_str):
+    def alignment_answer(all_question, all_answer):
         questions_with_answer = []
-        if not answer_str:
-            return [{"question": question, "answer": None} for question in all_question]
-        all_answer = StandardExamParser.extract_answers(answer_area_str_process(answer_str))
 
         #  倒叙是因为，有的文件出现多个相同的题号，我们确保我们拿到的是准确的
         questions_map = {extract_and_combine_numbers_in_not_start(question): question for question in
@@ -183,17 +175,16 @@ class StandardExamParser():
         对齐
         """
         print(f"【对齐开始】")
-        all_question, split_str = StandardExamParser.extract_questions(self.content)
-        answer_str = generate_answer_area_string(self.content, split_str)
-        questions_with_answer=StandardExamParser.alignment_answer(all_question, answer_str)
-        for row in questions_with_answer:
-            print()
+        all_question, all_answer = StandardExamParser.extract_questions_and_answers(self.content)
+        questions_with_answer=StandardExamParser.alignment_answer(all_question, all_answer)
 
-            print(row["question"])
-            print("-------------------------------------------------------")
-            print(f"{row['answer']}")
-            print()
-            print("============================================================")
+        # for row in questions_with_answer:
+        #     print()
+        #     print(row["question"])
+        #     print("-------------------------------------------------------")
+        #     print(f"{row['answer']}")
+        #     print()
+        #     print("============================================================")
 
         return questions_with_answer
 

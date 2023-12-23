@@ -17,6 +17,7 @@ class ExamParserContainer():
             return None
 
         if StandardExamParser.detect_this_exam_type(self.content):
+
             return StandardExamParser(self.content)
 
         if AnnotatedExamParser.detect_this_exam_type(self.content):
@@ -28,12 +29,8 @@ class ExamParserContainer():
 
         print(f"【not】【现存parser均不匹配】")
         return None
-    
-    def get_questions(self):
-        return self.parser.questions
 
-    def get_answer(self):
-        return self.parser.answers
+
     
     def align(self):
         return self.parser.align()

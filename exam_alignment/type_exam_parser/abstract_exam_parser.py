@@ -2,8 +2,6 @@ from abc import ABC, abstractmethod
 import re
 
 class AbstractExamParser(ABC):
-    #图北：我不太懂这个父类存在的必要，感觉有了之后更加麻烦了。。。。我的思路是干脆每种解析器自己写自己就好，不用继承这里的，公有方法放到utils里
-
     answer_keywords=["答案","解答"]
     topic_number_keywords=[".", '．', '、']
 

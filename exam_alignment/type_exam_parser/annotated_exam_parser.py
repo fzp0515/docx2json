@@ -1,9 +1,9 @@
 from .abstract_exam_parser import AbstractExamParser
 import re
 
-class AnnotatedExamParser(AbstractExamParser):
+class AnnotatedExamParser():
     def __init__(self, content):
-        super().__init__(content)
+        self.content=content
     
     @staticmethod
     def detect_this_exam_type(content: str):

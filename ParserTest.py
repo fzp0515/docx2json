@@ -5,7 +5,7 @@ from exam_alignment.type_exam_parser.standard_exam_parser import StandardExamPar
 from exam_alignment.type_exam_parser.split_exam_parser import SplitExamParser
 
 
-file_path = r"C:\Users\Zhipeng\Desktop\test\input\2010考研数学二真题及答案解析.md"
+file_path = r"C:\Users\Zhipeng\Desktop\test\input\2008年山西公务员考试《行测》真题及参考解析.md"
 import re
 regex_pattern = r"!\[\]\(media/(.+?)\)"
 with open(file_path, 'r', encoding='utf-8') as file:

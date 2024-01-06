@@ -1,3 +1,5 @@
+import math
+
 from .abstract_exam_parser import AbstractExamParser
 import re
 
@@ -11,7 +13,7 @@ from exam_alignment.utils.alignment_utils import longest_increasing_subsequence_
 from exam_alignment.utils.alignment_utils import find_answer_split_str
 from exam_alignment.utils.alignment_utils import find_next_question_index
 from exam_alignment.utils.alignment_utils import refine_answers
-from exam_alignment.utils.alignment_utils import match_specific_from_end
+from exam_alignment.utils.alignment_utils import filter_error_increasing_index
 from exam_alignment.utils.alignment_utils import remove_chinese_num_title
 from exam_alignment.utils.alignment_utils import generate_answer_area_string
 from exam_alignment.utils.alignment_utils import align_answers_in_questions
@@ -45,7 +47,9 @@ class StandardExamParser():
             answer_count = len(all_answer)
             print(f"question_list:'{question_count}'")
             print(f"answer_list:'{answer_count}'")
-            is_match = question_count == answer_count
+            #22道题目，匹配误差在4题以内可以接受，100道题则是10
+            tolerance_error=math.sqrt(question_count)
+            is_match = abs(question_count - answer_count)<=tolerance_error
         except:
             print(f"【抽取题干答案报错】")
             return False
@@ -88,6 +92,9 @@ class StandardExamParser():
         # 通过"最长递增子序列"寻找每个精准的题目所在inaccuracy_question对应的下标
         all_question_indexs = longest_increasing_subsequence_index(inaccuracy_question)
 
+        # 检查最后一个递增index有没有出现错误，使得最后一题分割过多
+        all_question_indexs=filter_error_increasing_index(all_question_indexs)
+        print(all_question_indexs)
         # 定义准确的题目列表
         all_question = []
         # index为all_question_indexs的下标，all_question_indexs[index]为inaccuracy_question的下标
@@ -106,11 +113,16 @@ class StandardExamParser():
 
         if isinstance(answer_split_str, str):
             print(f"split_str:\n{answer_split_str}")
+            print(f"==题目列表编号==")
+            for question in all_question:
+                print(question[:10])
             try:#如果是答案在最后一题当中，则其长度应远长于前两题之和
                 if len(all_question[-1]) > len(all_question[-2]) + len(all_question[-3]):
                     all_answer_area = all_question[-1].split(answer_split_str)[1]
                     all_question[-1] = all_question[-1].split(answer_split_str)[0]
             except:
+                print(f"==最后一题&答案区域如下==")
+                print(all_question[-1])
                 return None, None
 
         else:
@@ -139,9 +151,6 @@ class StandardExamParser():
             processed_inaccuracy_answers.append(
                 "\n".join(inaccuracy_answers[answer_index:inaccuracy_answer_indexes[index + 1]]))
         refine_answer = refine_answers(processed_inaccuracy_answers)[::-1]
-        print(f"==题目列表编号==")
-        for question in all_question:
-            print(question[:10])
 
         print(f"==答案列表编号==")
         for answer in refine_answer:

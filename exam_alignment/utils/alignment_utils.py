@@ -99,6 +99,25 @@ def extract_and_combine_numbers_in_not_start_by_number(str_val, number):
 
     return int(numbers) if numbers else None
 
+def filter_error_increasing_index(sequence):
+    '''
+    检查最后一个递增index有没有出现错误，使得最后一题分割过多
+    :param sequence: 递增子序列
+    :return: 修正后的递增子序列
+    '''
+    #计算平均index差异，以3倍为阈值
+    gaps = [sequence[i] - sequence[i - 1] for i in range(1, len(sequence))]
+    threshold=int(sum(gaps)*3/len(gaps))
+
+    #计算是否出现最后一题跳跃分割
+    gap = abs(sequence[-2] - sequence[-1])
+    if gap > threshold:
+        sequence.pop()
+
+    return sequence
+
+
+
 
 def longest_increasing_subsequence_index(topics):
     """
@@ -135,7 +154,7 @@ def longest_increasing_subsequence_index(topics):
     return [nums[i][1] for i in dp[0]]
 
 
-ANSWER_WORDS = ["答案", "参考答案", "试题解析", "参考解答"]
+ANSWER_WORDS = ["参考答案", "参考答案与解析","试题解析", "参考解答","答案"]
 ANSWER_IN_QUESTION_WORDS = ["答案", "答", "解"]
 
 

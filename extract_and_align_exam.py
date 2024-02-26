@@ -9,15 +9,16 @@ import zipfile
 import base64
 import pandas as pd
 import os
+import itertools
 import time
-
+import logging as log
 from exam_alignment.exam_parser_container import ExamParserContainer
 from exam_alignment.utils.alignment_utils import one_file_per_process
 from exam_alignment.utils.alignment_utils import extract_and_combine_numbers
-from exam_alignment.utils.alignment_utils import extract_and_combine_numbers_in_not_start
+from exam_alignment.utils.alignment_utils import find_recode_images_in_docx
 from exam_alignment.utils.alignment_utils import one_file_per_process
-from exam_alignment.utils.alignment_utils import extract_and_combine_numbers
-from exam_alignment.utils.alignment_utils import extract_and_combine_numbers_in_not_start
+from exam_alignment.utils.alignment_utils import extract_image_filenames
+from exam_alignment.utils.alignment_utils import convert_image_to_binary
 from exam_alignment.utils.alignment_utils import longest_increasing_subsequence_index
 from exam_alignment.utils.alignment_utils import find_answer_split_str
 from exam_alignment.utils.alignment_utils import find_next_question_index
@@ -31,64 +32,34 @@ from exam_alignment.utils.alignment_utils import type_of_judgment
 from exam_alignment.utils.alignment_utils import split_question
 from exam_alignment.utils.alignment_utils import find_continuous_sequence
 from exam_alignment.utils.alignment_utils import extract_and_combine_numbers_in_not_start_by_number
-from exam_alignment.utils.alignment_utils import count_answer_keywords
+from exam_alignment.utils.alignment_utils import remove_gpt_json_format
 import shutil
+from GPTAlignment.GPTAlignment import gpt_alignment_process
+
+log.basicConfig(level=log.INFO, format='%(asctime)s %(levelname)s (%(funcName)s:%(lineno)d) - %(message)s')
 
 
-def convert_image_to_binary(image_path):
-    '''
-    图片转二进制
-    :param image_path:
-    :return:
-    '''
-    with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode('utf-8')
-
-def find_recode_images_in_docx(docx_path):
-    '''
-    通过路径与文件名找到同名docx，并解压，找到其中的图片路径，返回字典
-    :param docx_path: 文件路径
-    :return: 图片字典，key是图片名，value是二进制
-    '''
-    image_base64_dic = {}
-
-    #防止有md没docx
-    if not os.path.exists(docx_path):
-        print("找不到" + docx_path)
-        return image_base64_dic
-
-    # Unzip the docx file
-    with zipfile.ZipFile(docx_path, 'r') as zip_ref:
-        # Extract to a temporary directory
-
-        directory, file_name = os.path.split(docx_path)
-        base_name, _ = os.path.splitext(file_name)
-
-        # Create new directory path
-        extract_path = os.path.join(directory, base_name)
-        zip_ref.extractall(extract_path)
-
-
-
-    media_folder_path = os.path.join(extract_path, 'word', 'media')
-    if not os.path.exists(media_folder_path):
-        print(file_name+"没有图片")
-        return image_base64_dic
-
-    for root, dirs, files in os.walk(media_folder_path):
-        for file in files:
-            image_path=os.path.join(media_folder_path,file)
-            image_base64_dic[file]=convert_image_to_binary(image_path)
-
-    return image_base64_dic
+SINGLE_QUESTION_JSON_FORMAT={
+    "is_quality_control": False,
+    "question": {
+      "problem": "",
+      "ground_truth_solution": "",
+      "ground_truth_answer": ""
+    },
+    "metaData": {
+      "origin": "",
+      "align_method": 0
+    },
+    "attachment": {
+      "pic_count": 0,
+      "images": {}
+    }
+  }
 
 
 
 
-
-
-
-def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: list, fail_files: list,handle_pic):
+def process_by_rule(md_text: str, file_local: Path, output_local: Path,not_rec_files: list, fail_files: list,handle_pic):
     '''
     处理md全文，包括模板匹配，分割与对齐，然后写入json文档
     :param md_text: 待处理全文
@@ -99,18 +70,16 @@ def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: li
     :param handle_pic: 是否处理图片
     :return:
     '''
-    print(f"=====开始处理 '{file_local.name}' ======")
-
+    log.info("开始用规则处理："+file_local.name)
     #分离图片和文本，防止切割题目连黏
     regex_pattern = r"!\[\]\(media/(.+?)\)"
     modified_text = re.sub(regex_pattern, r"![](media/\1)\n", md_text)
-
 
     examParserContainer = ExamParserContainer(modified_text)
     exam_parser = examParserContainer.get_exam_parser()
 
     if not exam_parser:
-        print(f"'{file_local.name}'已加入not文件夹")
+        log.info(f"'{file_local.name}'无法识别")
         not_rec_files.append(file_local)
         return
 
@@ -118,18 +87,20 @@ def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: li
         align_qustion = exam_parser.align()
 
     except:
-        print(f"exam_parser.align()报错")
-        print(f"'{file_local.name}' 已加入align fail文件夹")
+        log.error("exam_parser.align()报错")
+        log.info(f"'{file_local.name}' 对齐失败")
         fail_files.append(file_local)
         return
 
     if not align_qustion:
-        print(f"align_qustion为空")
-        print(f"'{file_local.name}' 已加入align fail文件夹")
+        log.error(f"align_qustion为空")
+        log.info(f"'{file_local.name}' 对齐失败")
         fail_files.append(file_local)
         return
 
-    #仅处理
+
+
+    #如果处理图片
     if handle_pic:
 
         # 得到docx文件下图片转成base64的字典
@@ -137,7 +108,7 @@ def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: li
             docx_file_path = os.path.join(os.path.dirname(file_local),file_local.name.replace(".md", ".docx"))
             images_base64_dic = find_recode_images_in_docx(docx_file_path)
         except:
-            print("【图片解析错误】")
+            log.error("无法在docx找到对应图片")
 
 
     for qustion_with_answer in align_qustion:
@@ -146,6 +117,8 @@ def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: li
         #抽取字符串里的图片名字
         pic_file=extract_image_filenames(concatenated_string)
         pic_count=len(pic_file)
+
+        #判断是否提取带图片的题目
         if pic_count and not handle_pic:
             continue
 
@@ -157,34 +130,26 @@ def process(md_text: str, file_local: Path, output_local: Path,not_rec_files: li
                     for file in pic_file:
                         image_base64_forsingle_dic[file]=images_base64_dic[file]
             except:
-                print("【图片对齐有问题】")
+                log.error("docx图片与md图片无法对齐")
 
-        #增加试卷detail data
-        qustion_with_answer["detail_data"]={
+        #填充入库数据
+        single_question=SINGLE_QUESTION_JSON_FORMAT
+        single_question["question"]["problem"]=qustion_with_answer["question"]
+        single_question["question"]["ground_truth_answer"]=qustion_with_answer["answer"]
 
-            "origin":str(file_local.name),#出处
-            "pic_count":pic_count,#图片数量
-            "images":image_base64_forsingle_dic#图片二进制字典
-        }
+        single_question["metaData"]["origin"]=str(file_local.name)
+        single_question["metaData"]["align_method"] = 0#0代表规则匹配 ，1代表GPT
+
+        single_question["attachment"]["pic_count"]=pic_count
+        single_question["attachment"]["images"] = image_base64_forsingle_dic
 
 
         with open(output_local, "a",encoding='utf-8') as ff:
 
-            ff.write(json.dumps(qustion_with_answer, ensure_ascii=False) + '\n')
+            ff.write(json.dumps(single_question, ensure_ascii=False) + '\n')
 
 
-def extract_image_filenames(text):
-    '''
-    匹配文本中的图片插入位置
-    :param text: 待匹配文本
-    :return: matchs组，包含图片名
-    '''
-    # 定义正则表达式
-    regex_pattern = r"!\[\]\(media/(.+?)\)"
 
-    # 使用findall函数查找所有匹配项
-    matches = re.findall(regex_pattern, text)
-    return matches
 
 
 if __name__ == "__main__":
@@ -194,6 +159,7 @@ if __name__ == "__main__":
     parser.add_argument('notRec_dir', type=str,  help="无法识别模式的文档所在的文件夹")
     parser.add_argument('fail_dir', type=str, help="无法对齐的文档所在的文件夹")
     parser.add_argument('--handle_pic', action='store_true', help='是否仅处理不带图片的题目')
+    parser.add_argument('--gpt_alignment', action='store_true', help='是否使用GPT')
     args = parser.parse_args()
 
     input_path = Path(args.input_dir)
@@ -201,6 +167,7 @@ if __name__ == "__main__":
     notRec_path = Path(args.notRec_dir)
     fail_path = Path(args.fail_dir)
     handle_pic=args.handle_pic
+    use_GPT=args.gpt_alignment
 
 
     not_rec_files = []
@@ -210,7 +177,11 @@ if __name__ == "__main__":
         file_count+=1
         with open(file, "r", encoding="utf-8") as f:
             md_text = one_file_per_process(f.read())
-            process(md_text, file, output_local,not_rec_files, fail_files,handle_pic)
+            #优先使用规则匹配
+            process_by_rule(md_text, file, output_local,not_rec_files, fail_files,handle_pic)
+
+
+
 
 
     # 移动无法识别的文件
@@ -241,7 +212,7 @@ if __name__ == "__main__":
     plt.bar(categories, values)
 
     # 添加标题和轴标签
-    plt.title('analysis of batch')
+    plt.title('extraction w rule w/o gpt')
     plt.xlabel('type')
     plt.ylabel('num')
 

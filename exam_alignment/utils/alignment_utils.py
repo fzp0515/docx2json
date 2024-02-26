@@ -1,5 +1,9 @@
+import base64
 import bisect
+import os
 import re
+import zipfile
+
 import regex
 import statistics
 import numpy as np
@@ -569,3 +573,83 @@ def find_continuous_sequence(all_question):
 
     # 返回包含连续编号问题序列的新问题列表
     return new_all_question
+def extract_image_filenames(text):
+    '''
+    匹配文本中的图片插入位置
+    :param text: 待匹配文本
+    :return: matchs组，包含图片名
+    '''
+    # 定义正则表达式
+    regex_pattern = r"!\[\]\(media/(.+?)\)"
+
+    # 使用findall函数查找所有匹配项
+    matches = re.findall(regex_pattern, text)
+    return matches
+
+def convert_image_to_binary(image_path):
+    '''
+    图片转二进制
+    :param image_path:
+    :return:
+    '''
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode('utf-8')
+
+def find_recode_images_in_docx(docx_path):
+    '''
+    通过路径与文件名找到同名docx，并解压，找到其中的图片路径，返回字典
+    :param docx_path: 文件路径
+    :return: 图片字典，key是图片名，value是二进制
+    '''
+    image_base64_dic = {}
+
+    #防止有md没docx
+    if not os.path.exists(docx_path):
+        print("找不到" + docx_path)
+        return image_base64_dic
+
+    # Unzip the docx file
+    with zipfile.ZipFile(docx_path, 'r') as zip_ref:
+        # Extract to a temporary directory
+
+        directory, file_name = os.path.split(docx_path)
+        base_name, _ = os.path.splitext(file_name)
+
+        # Create new directory path
+        extract_path = os.path.join(directory, base_name)
+        zip_ref.extractall(extract_path)
+
+
+
+    media_folder_path = os.path.join(extract_path, 'word', 'media')
+    if not os.path.exists(media_folder_path):
+        print(file_name+"没有图片")
+        return image_base64_dic
+
+    for root, dirs, files in os.walk(media_folder_path):
+        for file in files:
+            image_path=os.path.join(media_folder_path,file)
+            image_base64_dic[file]=convert_image_to_binary(image_path)
+
+    return image_base64_dic
+
+def remove_gpt_json_format(input_str, start_pattern="```json", end_pattern="```"):
+    # 检查字符串是否以指定的开头和结尾开始
+    if input_str.startswith(start_pattern) and input_str.endswith(end_pattern):
+        # 去除开头和结尾的特定部分
+        # 计算开始模式和结束模式的长度，以便正确切片
+        start_pattern_length = len(start_pattern)
+        end_pattern_length = len(end_pattern)
+        # 切片去除开头和结尾
+        cleaned_str = input_str[start_pattern_length:-end_pattern_length]
+    else:
+        # 如果不是以特定的开头和结尾开始，直接返回原字符串
+        cleaned_str = input_str
+    return cleaned_str
+
+def remove_uncompleted_json_data(s):
+
+    last_brace_pos = s.rfind('},')
+    processed_string = s[:last_brace_pos + 1] + '\n]'
+    return processed_string
+

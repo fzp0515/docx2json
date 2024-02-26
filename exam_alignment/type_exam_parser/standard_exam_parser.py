@@ -45,8 +45,24 @@ class StandardExamParser():
             all_question, all_answer = StandardExamParser.extract_questions_and_answers(content)
             question_count = len(all_question)
             answer_count = len(all_answer)
+
+            # print(f"=====================题目列表编号==")
+            #
+            # for question in all_question[0:5]:
+            #     print(question[:10])
+            # print("......")
+            # for question in all_question[-3:-1]:
+            #     print(question[:10])
+            # print(f"=====================答案列表编号==")
+            # for answer in all_answer[0:5]:
+            #     print(answer[:10])
+            # print("......")
+            # for answer in all_answer[-3:-1]:
+            #     print(answer[:10])
+
             print(f"question_list:'{question_count}'")
             print(f"answer_list:'{answer_count}'")
+
             #22道题目，匹配误差在4题以内可以接受，100道题则是10
             tolerance_error=math.sqrt(question_count)
             is_match = abs(question_count - answer_count)<=tolerance_error
@@ -113,16 +129,14 @@ class StandardExamParser():
 
         if isinstance(answer_split_str, str):
             print(f"split_str:\n{answer_split_str}")
-            print(f"==题目列表编号==")
-            for question in all_question:
-                print(question[:10])
+
             try:#如果是答案在最后一题当中，则其长度应远长于前两题之和
                 if len(all_question[-1]) > len(all_question[-2]) + len(all_question[-3]):
                     all_answer_area = all_question[-1].split(answer_split_str)[1]
                     all_question[-1] = all_question[-1].split(answer_split_str)[0]
             except:
-                print(f"==最后一题&答案区域如下==")
-                print(all_question[-1])
+                # print(f"==最后一题&答案区域如下==")
+                # print(all_question[-1])
                 return None, None
 
         else:
@@ -152,9 +166,7 @@ class StandardExamParser():
                 "\n".join(inaccuracy_answers[answer_index:inaccuracy_answer_indexes[index + 1]]))
         refine_answer = refine_answers(processed_inaccuracy_answers)[::-1]
 
-        print(f"==答案列表编号==")
-        for answer in refine_answer:
-            print(answer[:10])
+
 
         return all_question,refine_answer
 
@@ -172,10 +184,11 @@ class StandardExamParser():
 
         for sequence_number in questions_map:
             questions_with_answer.append({
-                "question": questions_map.get(sequence_number),
-                "answer": answer_map.get(sequence_number, None)
+                "problem": questions_map.get(sequence_number),
+                "options":"",
+                "ground_truth_solution": "",
+                "ground_truth_answer": answer_map.get(sequence_number, None)
             })
-
         return list(reversed(questions_with_answer))
 
 

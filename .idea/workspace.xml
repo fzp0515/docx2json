@@ -5,10 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="25a7464d-af22-4a43-a4fd-74484e4dc70e" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/GPTAlignment/GPTAlignment.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/GPT_align_exam.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/readme/data.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ParserTest.py" beforeDir="false" afterPath="$PROJECT_DIR$/ParserTest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/exam_alignment/type_exam_parser/standard_exam_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/exam_alignment/type_exam_parser/standard_exam_parser.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/exam_alignment/utils/alignment_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/exam_alignment/utils/alignment_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/extract_and_align_exam.py" beforeDir="false" afterPath="$PROJECT_DIR$/extract_and_align_exam.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run.sh" beforeDir="false" afterPath="$PROJECT_DIR$/run.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,6 +52,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Zhipeng/Desktop/MNBVC/code/new/docx2json&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -54,6 +62,16 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Zhipeng\Desktop\MNBVC\code\new\docx2json" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Zhipeng\Desktop\MNBVC\code\new\docx2json\readme" />
+      <recent name="C:\Users\Zhipeng\Desktop\MNBVC\code\new\docx2json\GPTAlignment" />
+      <recent name="C:\Users\Zhipeng\Desktop\MNBVC\code\new\docx2json" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="extract_and_align_exam" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="docx2json" />
@@ -91,7 +109,17 @@
       <workItem from="1702704159649" duration="17383000" />
       <workItem from="1703298624145" duration="14820000" />
       <workItem from="1704525838038" duration="16000" />
-      <workItem from="1704525935564" duration="3098000" />
+      <workItem from="1704525935564" duration="7202000" />
+      <workItem from="1705124739185" duration="11383000" />
+      <workItem from="1705886307747" duration="1217000" />
+      <workItem from="1705982306831" duration="6184000" />
+      <workItem from="1706025215204" duration="18000" />
+      <workItem from="1706025420075" duration="29000" />
+      <workItem from="1706343781049" duration="2466000" />
+      <workItem from="1706945281394" duration="11552000" />
+      <workItem from="1708685979418" duration="6306000" />
+      <workItem from="1708761533202" duration="21151000" />
+      <workItem from="1708947125284" duration="4005000" />
     </task>
     <servers />
   </component>
@@ -99,7 +127,10 @@
     <option name="version" value="3" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/docx2json$extract_and_align_exam.coverage" NAME="extract_and_align_exam Coverage Results" MODIFIED="1703301856433" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/docx2json$ParserTest.coverage" NAME="ParserTest Coverage Results" MODIFIED="1704529055823" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/docx2json$extract_and_align_exam.coverage" NAME="extract_and_align_exam Coverage Results" MODIFIED="1708947933504" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/docx2json$GPTAlignment.coverage" NAME="GPTAlignment Coverage Results" MODIFIED="1708770574773" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/GPTAlignment" />
+    <SUITE FILE_PATH="coverage/docx2json$assessment.coverage" NAME="assessment Coverage Results" MODIFIED="1706022367313" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/docx2json$ParserTest.coverage" NAME="ParserTest Coverage Results" MODIFIED="1706948190295" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/docx2json$test.coverage" NAME="test Coverage Results" MODIFIED="1708948406121" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
